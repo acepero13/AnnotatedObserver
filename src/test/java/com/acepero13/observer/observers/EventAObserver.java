@@ -15,23 +15,33 @@ public final class EventAObserver {
     public final AtomicBoolean eventAFired = new AtomicBoolean(false);
     public final AtomicBoolean eventBFired = new AtomicBoolean(false);
     public final AtomicBoolean aOrBFired = new AtomicBoolean(false);
+    public final AtomicBoolean allFired = new AtomicBoolean(false);
 
     public EventAObserver() {
         EventDispatcher.getInstance().register(this);
     }
 
-    @OnEvent(notifyOn = {EventA.class})
+    @OnEvent(notifyWhen = {EventA.class})
     public void update(EventA event) {
         eventAFired.set(true);
     }
 
-    @OnEvent(notifyOn = {EventB.class})
+    @OnEvent(notifyWhen = {EventB.class})
     public void update(EventB event) {
         eventBFired.set(true);
     }
 
-    @OnEvent(notifyOn = {EventA.class, EventB.class})
+    @OnEvent(notifyWhen = {EventA.class, EventB.class})
     public void update(Event event) {
         aOrBFired.set(true);
+    }
+
+    @OnEvent()
+    public void updateAll(Event event) {
+        allFired.set(true);
+    }
+
+    public void methodThatShouldNeverBeCalled() {
+        throw new RuntimeException("Should not be called");
     }
 }

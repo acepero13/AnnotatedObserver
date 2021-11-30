@@ -9,13 +9,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class EventDispatcher {
     private static final EventDispatcher instance = new EventDispatcher();
     private final List<Object> observers = new ArrayList<>();
-    private final HashMap<Class<? extends Event>, Object> observersEventMap = new HashMap<>();
 
     private EventDispatcher() {
     }
@@ -28,7 +27,7 @@ public final class EventDispatcher {
         if (observer.getClass().isAnnotationPresent(Observer.class)) {
             this.observers.add(observer);
         } else {
-            throw new ObserverIsNotAnnotated();
+            throw new ObserverIsNotAnnotated(observer);
         }
     }
 
@@ -37,26 +36,47 @@ public final class EventDispatcher {
     }
 
     public void dispatch(Event event) {
-        observers
-                .forEach(o -> notifyObserver(o, event));
+        observers.stream()
+                .map(o -> new AnnotationProcessor(o, event))
+                .forEach(AnnotationProcessor::notifyObserver);
     }
 
-    private void notifyObserver(Object obj, Event event) {
-        Class<?> clazz = obj.getClass();
-        for(Method method: clazz.getDeclaredMethods()) {
-            if(method.isAnnotationPresent(OnEvent.class) && methodAcceptsEvent(method, event)) {
-                method.setAccessible(true);
-                try {
-                    method.invoke(obj, event);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+    private static class AnnotationProcessor {
+
+        private final Object observer;
+        private final Event event;
+        private final List<Method> methods;
+
+        public AnnotationProcessor(Object observer, Event event) {
+            this.observer = observer;
+            this.event = event;
+            this.methods = executableMethods();
+        }
+
+        public void notifyObserver() {
+            methods.forEach(this::tryToExecute);
+        }
+
+        private void tryToExecute(Method method) {
+            method.setAccessible(true);
+            try {
+                method.invoke(observer, event);
+            } catch (IllegalAccessException | InvocationTargetException e) { // TODO: LOG
+                e.printStackTrace();
             }
         }
-    }
 
-    private boolean methodAcceptsEvent(Method method, Event event) {
-        var annotations = method.getAnnotation(OnEvent.class).notifyOn();
-        return Arrays.stream(annotations).anyMatch(a -> a.isInstance(event));
+        public List<Method> executableMethods() {
+            return Arrays.stream(observer.getClass().getDeclaredMethods())
+                    .filter(m -> m.isAnnotationPresent(OnEvent.class))
+                    .filter(m -> methodAcceptsEvent(m, event))
+                    .collect(Collectors.toList());
+
+        }
+
+        private boolean methodAcceptsEvent(Method method, Event event) {
+            var annotations = method.getAnnotation(OnEvent.class).notifyWhen();
+            return Arrays.stream(annotations).anyMatch(a -> a.isInstance(event));
+        }
     }
 }

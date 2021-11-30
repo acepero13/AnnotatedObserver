@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface OnEvent {
-    Class<? extends Event>[] notifyOn() default Event.class;
+    Class<? extends Event>[] notifyWhen() default Event.class;
 }
