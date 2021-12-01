@@ -44,4 +44,13 @@ public final class EventAObserver {
     public void methodThatShouldNeverBeCalled() {
         throw new RuntimeException("Should not be called");
     }
+
+    @Notify(when = EventC.class)
+    public void raiseExceptionMethod(EventC eventC) throws Exception {
+        throw new Exception("I raised an exception Oops!");
+    }
+
+
+    public static class EventC implements Event{
+    }
 }

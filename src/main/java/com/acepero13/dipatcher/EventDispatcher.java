@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  */
 public final class EventDispatcher {
     private static final EventDispatcher instance = new EventDispatcher();
+    private final static Logger LOGGER = Logger.getLogger(EventDispatcher.class.getName());
     private final List<Object> observers = new ArrayList<>();
 
     private EventDispatcher() {
@@ -61,6 +63,7 @@ public final class EventDispatcher {
      * @param event an instance of the event we want to trigger
      */
     public void dispatch(Event event) {
+        // TODO: Async..
         observers.stream()
                 .map(o -> new AnnotationProcessor(o, event))
                 .forEach(AnnotationProcessor::notifyObserver);
@@ -86,8 +89,11 @@ public final class EventDispatcher {
             method.setAccessible(true);
             try {
                 method.invoke(observer, event);
-            } catch (IllegalAccessException | InvocationTargetException e) { // TODO: LOG
-                e.printStackTrace();
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                String reason = e.getMessage() == null && e.getCause() != null
+                        ? e.getCause().getMessage()
+                        : e.getMessage();
+                LOGGER.warning("Error while executing method: \"" + method.getName() + "\". Reason: \"" + reason + "\"");
             }
         }
 

@@ -4,7 +4,6 @@ import com.acepero13.observer.events.EventA;
 import com.acepero13.observer.exception.ObserverIsNotAnnotated;
 import com.acepero13.observer.observers.EventAObserver;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,6 +47,11 @@ class EventDispatcherTest {
         assertTrue(observer.allFired.get());
         assertTrue(observer.aOrBFired.get());
         assertFalse(observer.eventBFired.get());
+    }
+
+    @Test public void notifiedMethodRaisesException(){
+        EventDispatcher.getInstance().dispatch(new EventAObserver.EventC());
+        assertFalse(observer.eventAFired.get());
     }
 
 }
