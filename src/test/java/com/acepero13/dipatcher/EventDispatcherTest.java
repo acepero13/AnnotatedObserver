@@ -18,11 +18,6 @@ class EventDispatcherTest {
         EventDispatcher.getInstance().shutDown();
     }
 
-    @BeforeEach
-    public void setUp() {
-        EventDispatcher.getInstance().register(observer);
-    }
-
     @Test
     public void cannotAddNonAnnotatedObserver() {
         assertThrows(ObserverIsNotAnnotated.class, () -> EventDispatcher.getInstance().register(this));

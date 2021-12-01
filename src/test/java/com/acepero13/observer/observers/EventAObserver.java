@@ -3,7 +3,7 @@ package com.acepero13.observer.observers;
 import com.acepero13.dipatcher.EventDispatcher;
 import com.acepero13.observer.Event;
 import com.acepero13.observer.Observer;
-import com.acepero13.observer.OnEvent;
+import com.acepero13.observer.Notify;
 import com.acepero13.observer.events.EventA;
 import com.acepero13.observer.events.EventB;
 
@@ -21,22 +21,22 @@ public final class EventAObserver {
         EventDispatcher.getInstance().register(this);
     }
 
-    @OnEvent(notifyWhen = {EventA.class})
+    @Notify(when = {EventA.class})
     public void update(EventA event) {
         eventAFired.set(true);
     }
 
-    @OnEvent(notifyWhen = {EventB.class})
+    @Notify(when = {EventB.class})
     public void update(EventB event) {
         eventBFired.set(true);
     }
 
-    @OnEvent(notifyWhen = {EventA.class, EventB.class})
+    @Notify(when = {EventA.class, EventB.class})
     public void update(Event event) {
         aOrBFired.set(true);
     }
 
-    @OnEvent()
+    @Notify()
     public void updateAll(Event event) {
         allFired.set(true);
     }
